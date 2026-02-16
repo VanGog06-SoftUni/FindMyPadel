@@ -1,5 +1,10 @@
-import { Menu } from "lucide-react";
+"use client";
+
+import { LogOut, Menu } from "lucide-react";
+import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
+
+import { Button } from "@/components/ui/button";
 
 import { PadelBall } from "./PadelBall";
 
@@ -7,6 +12,8 @@ import { PadelBall } from "./PadelBall";
  * Navigation header component
  */
 export function Header() {
+  const { data: session, status } = useSession();
+
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
@@ -41,11 +48,33 @@ export function Header() {
           </Link>
         </nav>
 
-        {/* CTA Button */}
+        {/* Auth Buttons */}
         <div className="flex items-center space-x-4">
-          <button className="hidden md:inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90">
-            Sign In
-          </button>
+          {status === "loading" ? (
+            <div className="hidden md:block h-9 w-20 animate-pulse rounded-md bg-muted" />
+          ) : session?.user ? (
+            <div className="hidden md:flex items-center gap-3">
+              <span className="text-sm font-medium text-secondary">
+                {session.user.firstName}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => signOut({ callbackUrl: "/" })}
+                className="gap-2 hover:bg-primary hover:text-white hover:border-primary"
+              >
+                <LogOut className="h-4 w-4" />
+                Sign Out
+              </Button>
+            </div>
+          ) : (
+            <Button
+              asChild
+              className="hidden md:inline-flex bg-primary text-primary-foreground hover:bg-primary/90"
+            >
+              <Link href="/signin">Sign In</Link>
+            </Button>
+          )}
 
           {/* Mobile menu button */}
           <button className="md:hidden p-2 text-foreground">
