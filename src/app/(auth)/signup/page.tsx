@@ -2,40 +2,69 @@
 
 import { signIn } from "next-auth/react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
+  Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle
 } from "@/components/ui/card";
+import { FieldError, FormError } from "@/components/ui/error";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useFormFields } from "@/hooks/useFormFields";
+
+type SignUpForm = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+};
+
+type SignUpErrors = {
+  form: string;
+  password: string;
+  confirmPassword: string;
+};
 
 export default function SignUpPage() {
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState("");
+  const router = useRouter();
+  const { form, setField } = useFormFields<SignUpForm>({
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
+  const [errors, setErrors] = useState<SignUpErrors>({
+    form: "",
+    password: "",
+    confirmPassword: "",
+  });
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
-    setError("");
+    setErrors({ form: "", password: "", confirmPassword: "" });
 
-    if (password !== confirmPassword) {
-      setError("Passwords do not match");
+    const normalizedEmail = form.email.trim().toLowerCase();
+
+    if (form.password !== form.confirmPassword) {
+      setErrors({
+        form: "",
+        password: "Passwords do not match",
+        confirmPassword: "Passwords do not match",
+      });
       return;
     }
 
-    if (password.length < 8) {
-      setError("Password must be at least 8 characters");
+    if (form.password.length < 8) {
+      setErrors({
+        form: "",
+        password: "Password must be at least 8 characters",
+        confirmPassword: "",
+      });
       return;
     }
 
@@ -45,32 +74,45 @@ export default function SignUpPage() {
       const res = await fetch("/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ firstName, lastName, email, password }),
+        body: JSON.stringify({
+          firstName: form.firstName.trim(),
+          lastName: form.lastName.trim(),
+          email: normalizedEmail,
+          password: form.password,
+        }),
       });
 
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error || "Something went wrong");
+        setErrors((prev) => ({
+          ...prev,
+          form: data.error || "Something went wrong",
+        }));
         return;
       }
 
       // Auto sign-in after successful registration
       const result = await signIn("credentials", {
-        email,
-        password,
+        email: normalizedEmail,
+        password: form.password,
         redirect: false,
+        callbackUrl: "/",
       });
 
       if (result?.error) {
-        setError(
-          "Account created but sign-in failed. Please sign in manually.",
-        );
+        setErrors((prev) => ({
+          ...prev,
+          form: "Account created but sign-in failed. Please sign in manually.",
+        }));
       } else {
-        window.location.href = "/";
+        router.replace("/");
       }
     } catch {
-      setError("Something went wrong. Please try again.");
+      setErrors((prev) => ({
+        ...prev,
+        form: "Something went wrong. Please try again.",
+      }));
     } finally {
       setIsLoading(false);
     }
@@ -99,11 +141,7 @@ export default function SignUpPage() {
           </CardHeader>
           <form onSubmit={handleSubmit}>
             <CardContent className="space-y-4">
-              {error && (
-                <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-                  {error}
-                </div>
-              )}
+              <FormError id="signup-error" message={errors.form} />
               <div className="grid grid-cols-2 gap-4">
                 <div className="gap-2">
                   <Label htmlFor="firstName">First Name</Label>
@@ -111,8 +149,11 @@ export default function SignUpPage() {
                     id="firstName"
                     type="text"
                     placeholder="John"
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
+                    value={form.firstName}
+                    onChange={(e) => setField("firstName", e.target.value)}
+                    autoComplete="given-name"
+                    aria-invalid={Boolean(errors.form)}
+                    aria-describedby={errors.form ? "signup-error" : undefined}
                     required
                     disabled={isLoading}
                   />
@@ -123,8 +164,11 @@ export default function SignUpPage() {
                     id="lastName"
                     type="text"
                     placeholder="Doe"
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
+                    value={form.lastName}
+                    onChange={(e) => setField("lastName", e.target.value)}
+                    autoComplete="family-name"
+                    aria-invalid={Boolean(errors.form)}
+                    aria-describedby={errors.form ? "signup-error" : undefined}
                     required
                     disabled={isLoading}
                   />
@@ -136,8 +180,11 @@ export default function SignUpPage() {
                   id="email"
                   type="email"
                   placeholder="you@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  value={form.email}
+                  onChange={(e) => setField("email", e.target.value)}
+                  autoComplete="email"
+                  aria-invalid={Boolean(errors.form)}
+                  aria-describedby={errors.form ? "signup-error" : undefined}
                   required
                   disabled={isLoading}
                 />
@@ -148,11 +195,20 @@ export default function SignUpPage() {
                   id="password"
                   type="password"
                   placeholder="At least 8 characters"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  value={form.password}
+                  onChange={(e) => setField("password", e.target.value)}
+                  autoComplete="new-password"
+                  aria-invalid={Boolean(errors.password)}
+                  aria-describedby={
+                    errors.password ? "signup-password-error" : undefined
+                  }
                   required
                   minLength={8}
                   disabled={isLoading}
+                />
+                <FieldError
+                  id="signup-password-error"
+                  message={errors.password}
                 />
               </div>
               <div className="gap-2">
@@ -161,11 +217,22 @@ export default function SignUpPage() {
                   id="confirmPassword"
                   type="password"
                   placeholder="Re-enter your password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  value={form.confirmPassword}
+                  onChange={(e) => setField("confirmPassword", e.target.value)}
+                  autoComplete="new-password"
+                  aria-invalid={Boolean(errors.confirmPassword)}
+                  aria-describedby={
+                    errors.confirmPassword
+                      ? "signup-confirm-password-error"
+                      : undefined
+                  }
                   required
                   minLength={8}
                   disabled={isLoading}
+                />
+                <FieldError
+                  id="signup-confirm-password-error"
+                  message={errors.confirmPassword}
                 />
               </div>
             </CardContent>
@@ -173,7 +240,14 @@ export default function SignUpPage() {
               <Button
                 type="submit"
                 className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
-                disabled={isLoading}
+                disabled={
+                  isLoading ||
+                  !form.firstName.trim() ||
+                  !form.lastName.trim() ||
+                  !form.email.trim() ||
+                  !form.password ||
+                  !form.confirmPassword
+                }
               >
                 {isLoading ? "Creating account..." : "Create Account"}
               </Button>

@@ -2,23 +2,21 @@
 
 import { signIn } from "next-auth/react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
+  Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle
 } from "@/components/ui/card";
+import { FormError } from "@/components/ui/error";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useFormFields } from "@/hooks/useFormFields";
 
 export default function SignInPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const router = useRouter();
+  const { form, setField } = useFormFields({ email: "", password: "" });
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -29,15 +27,16 @@ export default function SignInPage() {
 
     try {
       const result = await signIn("credentials", {
-        email,
-        password,
+        email: form.email.trim().toLowerCase(),
+        password: form.password,
         redirect: false,
+        callbackUrl: "/",
       });
 
       if (result?.error) {
         setError("Invalid email or password");
       } else {
-        window.location.href = "/";
+        router.replace("/");
       }
     } catch {
       setError("Something went wrong. Please try again.");
@@ -69,19 +68,18 @@ export default function SignInPage() {
           </CardHeader>
           <form onSubmit={handleSubmit}>
             <CardContent className="space-y-4">
-              {error && (
-                <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-                  {error}
-                </div>
-              )}
+              <FormError id="signin-error" message={error} />
               <div className="gap-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
                   type="email"
                   placeholder="you@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  value={form.email}
+                  onChange={(e) => setField("email", e.target.value)}
+                  autoComplete="email"
+                  aria-invalid={Boolean(error)}
+                  aria-describedby={error ? "signin-error" : undefined}
                   required
                   disabled={isLoading}
                 />
@@ -92,8 +90,11 @@ export default function SignInPage() {
                   id="password"
                   type="password"
                   placeholder="Enter your password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  value={form.password}
+                  onChange={(e) => setField("password", e.target.value)}
+                  autoComplete="current-password"
+                  aria-invalid={Boolean(error)}
+                  aria-describedby={error ? "signin-error" : undefined}
                   required
                   disabled={isLoading}
                 />
@@ -103,7 +104,7 @@ export default function SignInPage() {
               <Button
                 type="submit"
                 className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
-                disabled={isLoading}
+                disabled={isLoading || !form.email.trim() || !form.password}
               >
                 {isLoading ? "Signing in..." : "Sign In"}
               </Button>
