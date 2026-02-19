@@ -1,3 +1,5 @@
+import { ON_SITE_PAYMENT } from "@/lib/const";
+
 interface DialogBodyProps {
   courtName?: string;
   date: string;
@@ -49,7 +51,7 @@ export const DialogBody: React.FC<DialogBodyProps> = ({
       <div className="flex justify-between items-center">
         <span className="font-medium">Payment</span>
         <select className="border rounded px-2 py-1 bg-white dark:bg-zinc-900">
-          <option>On site</option>
+          <option>{ON_SITE_PAYMENT}</option>
         </select>
       </div>
       <div className="flex justify-between">

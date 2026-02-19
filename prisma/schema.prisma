@@ -18,6 +18,33 @@ model User {
   image          String?
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
+  hostedGames    Game[]
+  gamePlayers    GamePlayer[]
 
   @@map("users")
+}
+
+model Game {
+  id         String       @id @default(cuid())
+  date       DateTime
+  startIndex Int
+  endIndex   Int
+  host       User         @relation(fields: [hostId], references: [id])
+  hostId     String
+  players    GamePlayer[]
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+
+  @@map("games")
+}
+
+model GamePlayer {
+  id        String   @id @default(cuid())
+  game      Game     @relation(fields: [gameId], references: [id])
+  gameId    String
+  user      User?    @relation(fields: [userId], references: [id])
+  userId    String?
+  createdAt DateTime @default(now())
+
+  @@map("game_players")
 }

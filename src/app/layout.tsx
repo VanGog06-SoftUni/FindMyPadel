@@ -5,6 +5,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 
 import { Header } from "@/components/layout/Header";
 import { SessionProvider } from "@/components/providers/SessionProvider";
+import { ToastProvider } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
 
 const geistSans = Geist({
@@ -34,8 +35,10 @@ export default function RootLayout({
         className={cn(geistSans.variable, geistMono.variable, "antialiased")}
       >
         <SessionProvider>
-          <Header />
-          <main>{children}</main>
+          <ToastProvider>
+            <Header />
+            <main>{children}</main>
+          </ToastProvider>
         </SessionProvider>
       </body>
     </html>

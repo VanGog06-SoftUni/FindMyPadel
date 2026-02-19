@@ -3,11 +3,13 @@
 import { useMemo, useState } from "react";
 
 import { useDragSlots } from "@/hooks/useDragSlots";
+import { ON_SITE_PAYMENT } from "@/lib/const";
 import { buildTimeSlots } from "@/lib/hostUtils";
 
 import { Button } from "./button";
 import { Dialog } from "./dialog";
 import { DialogBody } from "./dialogBody";
+import { useToast } from "./toast";
 
 interface TimeSlotsProps {
   selectedSlotIndexes: number[];
@@ -28,6 +30,7 @@ export const TimeSlots: React.FC<TimeSlotsProps> = ({
     startIndex: number;
     endIndex: number;
   } | null>(null);
+  const [reserveLoading, setReserveLoading] = useState(false);
 
   const handleSlotSelect = (indexes: number[]) => {
     onSlotSelect(indexes);
@@ -38,6 +41,8 @@ export const TimeSlots: React.FC<TimeSlotsProps> = ({
     });
     setDialogOpen(true);
   };
+
+  const toast = useToast();
 
   const {
     dragState,
@@ -66,6 +71,44 @@ export const TimeSlots: React.FC<TimeSlotsProps> = ({
     setDialogOpen(false);
     setReservation(null);
     onSlotSelect([]);
+  };
+
+  const reserveGame = async () => {
+    if (!reservation) return;
+    setReserveLoading(true);
+
+    try {
+      const res = await fetch("/api/host", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          date: reservation.date,
+          startIndex: reservation.startIndex,
+          endIndex: reservation.endIndex,
+          payment: ON_SITE_PAYMENT,
+        }),
+      });
+
+      if (res.status === 201) {
+        toast("Reservation created successfully", "success");
+        setDialogOpen(false);
+        setReservation(null);
+        onSlotSelect([]);
+      } else if (res.status === 409) {
+        const data = await res.json().catch(() => null);
+        toast(data?.error ?? "Selected slots already reserved", "error");
+      } else if (res.status === 401) {
+        toast("You must be signed in to reserve a game.", "error");
+      } else {
+        toast("Failed to create reservation", "error");
+      }
+    } catch (e) {
+      console.error(e);
+      toast("Reservation failed", "error");
+    } finally {
+      setReserveLoading(false);
+    }
   };
 
   return (
@@ -98,8 +141,12 @@ export const TimeSlots: React.FC<TimeSlotsProps> = ({
         onClose={handleDialogClose}
         title="Reservation"
         footer={
-          <Button onClick={handleDialogClose} className="ml-auto">
-            Reserve
+          <Button
+            onClick={reserveGame}
+            disabled={reserveLoading}
+            className="ml-auto"
+          >
+            {reserveLoading ? "Reserving..." : "Reserve"}
           </Button>
         }
       >
