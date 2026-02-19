@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 
-import { TimeSlots } from "@/components/TimeSlots";
 import {
   Card,
   CardContent,
@@ -12,6 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { TimeSlots } from "@/components/ui/timeSlots";
 import { formatDateForInput } from "@/lib/hostUtils";
 
 export default function HostPage() {
@@ -31,7 +31,7 @@ export default function HostPage() {
         className="pointer-events-none absolute inset-0 bg-secondary/35"
       />
 
-      <div className="relative z-10 flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-10">
+      <div className="relative z-10 flex min-h-[calc(100vh-4rem)] items-center justify-center px-4">
         <Card className="w-full max-w-xl border-border">
           <CardHeader className="space-y-2">
             <CardTitle className="text-2xl font-bold text-secondary">
@@ -62,6 +62,7 @@ export default function HostPage() {
             <TimeSlots
               selectedSlotIndexes={selectedSlotIndexes}
               onSlotSelect={setSelectedSlotIndexes}
+              selectedDate={selectedDate}
             />
           </CardContent>
         </Card>
