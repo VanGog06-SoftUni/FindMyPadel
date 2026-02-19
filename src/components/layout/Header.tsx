@@ -3,6 +3,7 @@
 import { LogOut, Menu } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 
@@ -13,6 +14,7 @@ import { PadelBall } from "./PadelBall";
  */
 export function Header() {
   const { data: session, status } = useSession();
+  const pathname = usePathname();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background">
@@ -29,20 +31,37 @@ export function Header() {
         <nav className="hidden md:flex items-center gap-4">
           <Link
             href="/"
-            aria-current="page"
-            className="inline-flex items-center pb-px text-base font-semibold text-secondary border-b-2 border-primary"
+            aria-current={pathname === "/" ? "page" : undefined}
+            className={
+              `inline-flex items-center pb-px text-base font-medium border-b-2 transition-colors ` +
+              (pathname === "/"
+                ? "font-semibold text-secondary border-primary"
+                : "text-secondary/80 border-transparent hover:text-secondary")
+            }
           >
             Home
           </Link>
           <Link
             href="/games"
-            className="inline-flex items-center pb-px text-base font-medium text-secondary/80 border-b-2 border-transparent transition-colors hover:text-secondary"
+            aria-current={pathname === "/games" ? "page" : undefined}
+            className={
+              `inline-flex items-center pb-px text-base font-medium border-b-2 transition-colors ` +
+              (pathname === "/games"
+                ? "font-semibold text-secondary border-primary"
+                : "text-secondary/80 border-transparent hover:text-secondary")
+            }
           >
             Find Games
           </Link>
           <Link
             href="/host"
-            className="inline-flex items-center pb-px text-base font-medium text-secondary/80 border-b-2 border-transparent transition-colors hover:text-secondary"
+            aria-current={pathname === "/host" ? "page" : undefined}
+            className={
+              `inline-flex items-center pb-px text-base font-medium border-b-2 transition-colors ` +
+              (pathname === "/host"
+                ? "font-semibold text-secondary border-primary"
+                : "text-secondary/80 border-transparent hover:text-secondary")
+            }
           >
             Host a Game
           </Link>
