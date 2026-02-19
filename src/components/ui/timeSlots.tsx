@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 
 import { useDragSlots } from "@/hooks/useDragSlots";
+import { useReservedIndexes } from "@/hooks/useReservedIndexes";
 import { ON_SITE_PAYMENT } from "@/lib/const";
 import { buildTimeSlots } from "@/lib/hostUtils";
 
@@ -23,6 +24,8 @@ export const TimeSlots: React.FC<TimeSlotsProps> = ({
   onSlotSelect,
 }) => {
   const timeSlots = useMemo(() => buildTimeSlots(), []);
+
+  const [reservedIndexes, refreshReserved] = useReservedIndexes(selectedDate);
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [reservation, setReservation] = useState<{
@@ -49,7 +52,7 @@ export const TimeSlots: React.FC<TimeSlotsProps> = ({
     dragPreviewIndexes,
     handlePointerDown,
     handlePointerEnter,
-  } = useDragSlots(selectedSlotIndexes, handleSlotSelect);
+  } = useDragSlots(selectedSlotIndexes, handleSlotSelect, reservedIndexes);
 
   const isSlotSelected = (index: number) => {
     if (dragState.isDragging) {
@@ -95,6 +98,8 @@ export const TimeSlots: React.FC<TimeSlotsProps> = ({
         setDialogOpen(false);
         setReservation(null);
         onSlotSelect([]);
+
+        await refreshReserved();
       } else if (res.status === 409) {
         const data = await res.json().catch(() => null);
         toast(data?.error ?? "Selected slots already reserved", "error");
@@ -117,23 +122,31 @@ export const TimeSlots: React.FC<TimeSlotsProps> = ({
         className="max-h-[60vh] space-y-1 overflow-y-auto pr-1"
         style={{ userSelect: dragState.isDragging ? "none" : "auto" }}
       >
-        {timeSlots.map((slot, index) => (
-          <button
-            key={slot}
-            type="button"
-            className={`flex w-full cursor-pointer items-center justify-between rounded-md border px-4 py-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
-              isSlotSelected(index)
-                ? "border-primary/25 bg-primary text-primary-foreground brightness-90"
-                : "border-primary/25 bg-primary text-primary-foreground hover:brightness-90"
-            }`}
-            onPointerDown={() => handlePointerDown(index)}
-            onPointerEnter={() => handlePointerEnter(index)}
-            onClick={() => handleSlotClick(index)}
-          >
-            <span className="font-medium">{slot}</span>
-            <span className="text-sm">Free</span>
-          </button>
-        ))}
+        {timeSlots.map((slot, index) => {
+          const isReserved = reservedIndexes.includes(index);
+          return (
+            <button
+              key={slot}
+              type="button"
+              disabled={isReserved}
+              className={`flex w-full items-center justify-between rounded-md border px-4 py-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+                isReserved
+                  ? "cursor-not-allowed border-red-200 bg-red-50 text-red-900"
+                  : isSlotSelected(index)
+                    ? "border-primary/25 bg-primary text-primary-foreground brightness-90"
+                    : "border-primary/25 bg-primary text-primary-foreground hover:brightness-90"
+              }`}
+              onPointerDown={() => handlePointerDown(index)}
+              onPointerEnter={() => handlePointerEnter(index)}
+              onClick={() => handleSlotClick(index)}
+            >
+              <span className="font-medium">{slot}</span>
+              <span className="text-sm">
+                {isReserved ? "Reserved" : "Free"}
+              </span>
+            </button>
+          );
+        })}
       </div>
 
       <Dialog

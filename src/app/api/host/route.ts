@@ -87,3 +87,34 @@ export async function POST(request: Request) {
     );
   }
 }
+
+export async function GET(request: Request) {
+  try {
+    const url = new URL(request.url);
+    const dateParam = url.searchParams.get("date");
+
+    if (!dateParam) {
+      return NextResponse.json({ error: "Missing date" }, { status: 400 });
+    }
+
+    const gameDate = new Date(dateParam);
+    if (Number.isNaN(gameDate.getTime())) {
+      return NextResponse.json({ error: "Invalid date" }, { status: 400 });
+    }
+
+    gameDate.setUTCHours(0, 0, 0, 0);
+
+    const games = await prisma.game.findMany({
+      where: { date: gameDate },
+      select: { startIndex: true, endIndex: true },
+    });
+
+    return NextResponse.json({ games });
+  } catch (error) {
+    console.error("Host fetch error:", error);
+    return NextResponse.json(
+      { error: "Something went wrong" },
+      { status: 500 },
+    );
+  }
+}
