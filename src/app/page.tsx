@@ -1,4 +1,5 @@
 import { ArrowRight, Calendar, MapPin, Users } from "lucide-react";
+import Link from "next/link";
 
 /**
  * Home page - Landing page for FindMyPadel
@@ -29,13 +30,19 @@ export default function Home() {
               or host your own game and let others join.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
-              <button className="inline-flex items-center justify-center rounded-lg bg-primary px-6 py-3 text-lg font-semibold text-primary-foreground transition-colors hover:bg-primary/90">
+              <Link
+                href="/games"
+                className="inline-flex items-center justify-center rounded-lg bg-primary px-6 py-3 text-lg font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+              >
                 Find Games
                 <ArrowRight className="ml-2 h-5 w-5" />
-              </button>
-              <button className="inline-flex items-center justify-center rounded-lg border-2 border-white px-6 py-3 text-lg font-semibold text-white transition-colors hover:bg-white/10">
+              </Link>
+              <Link
+                href="/host"
+                className="inline-flex items-center justify-center rounded-lg border-2 border-white px-6 py-3 text-lg font-semibold text-white transition-colors hover:bg-white/10"
+              >
                 Host a Game
-              </button>
+              </Link>
             </div>
           </div>
         </div>
@@ -92,7 +99,6 @@ export default function Home() {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Placeholder game cards */}
             {[1, 2, 3].map((i) => (
               <div
                 key={i}
