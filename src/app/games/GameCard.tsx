@@ -111,13 +111,15 @@ export function GameCard({ game, index }: { game: Game; index: number }) {
       </CardContent>
 
       <CardFooter>
-        <div className="ml-auto">
-          {isJoined ? (
-            <LeaveButton gameId={game.id} />
-          ) : (
-            <JoinButton gameId={game.id} disabled={isFull} />
-          )}
-        </div>
+        {userId && (
+          <div className="ml-auto">
+            {isJoined ? (
+              <LeaveButton gameId={game.id} />
+            ) : (
+              <JoinButton gameId={game.id} disabled={isFull} />
+            )}
+          </div>
+        )}
       </CardFooter>
     </Card>
   );
