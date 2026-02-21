@@ -1,6 +1,5 @@
 import { Calendar, Users } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardAction,
@@ -13,7 +12,9 @@ import {
 import { buildTimeSlots } from "@/lib/hostUtils";
 import { addMinutes, getPlayerLabel } from "@/lib/utils";
 
-import type { Game } from "@/types/game";
+import JoinButton from "./JoinButton";
+
+import type { Game } from "@/types/models";
 
 export function GameCard({ game, index }: { game: Game; index: number }) {
   const slots = buildTimeSlots();
@@ -79,15 +80,15 @@ export function GameCard({ game, index }: { game: Game; index: number }) {
 
         <div className="mt-3 grid grid-cols-1 gap-1">
           {Array.from({ length: 4 }).map((_, i) => {
-            const p = players[i];
-            const label = getPlayerLabel(p);
+            const player = players[i];
+            const label = getPlayerLabel(player?.user);
             return (
               <div
                 key={i}
                 className="flex items-center gap-2 rounded-md px-2 py-1 border text-sm"
               >
                 <div className="flex-1 text-xs text-muted-foreground">
-                  {label ?? ""}
+                  {label}
                 </div>
                 <div className="text-xs text-muted-foreground">
                   {label ? "Signed" : "Empty"}
@@ -100,9 +101,7 @@ export function GameCard({ game, index }: { game: Game; index: number }) {
 
       <CardFooter>
         <div className="ml-auto">
-          <Button variant="default" className="px-3 py-1 text-sm">
-            Join
-          </Button>
+          <JoinButton gameId={game.id} players={players} />
         </div>
       </CardFooter>
     </Card>

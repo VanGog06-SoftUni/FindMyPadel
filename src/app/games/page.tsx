@@ -2,11 +2,13 @@ import { prisma } from "@/lib/prisma";
 
 import GameCard from "./GameCard";
 
+import type { Game } from "@/types/models";
+
 export default async function Page() {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const games = await prisma.game.findMany({
+  const games: Game[] = await prisma.game.findMany({
     where: {
       date: {
         gte: today,
@@ -15,10 +17,26 @@ export default async function Page() {
     include: {
       players: {
         include: {
-          user: true,
+          user: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+              image: true,
+            },
+          },
         },
       },
-      host: true,
+      host: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+          image: true,
+        },
+      },
     },
     orderBy: [{ date: "asc" }, { startIndex: "asc" }],
   });

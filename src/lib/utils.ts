@@ -1,7 +1,7 @@
 import { ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
-import type { GamePlayer } from "@/types/game";
+import type { User } from "@/types/models";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -21,13 +21,13 @@ export function addMinutes(time: string, minsToAdd: number) {
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
 }
 
-export function getPlayerLabel(p?: GamePlayer | null): string | null {
-  if (!p || !p.user) return null;
+export function getPlayerLabel(user: User | null): string {
+  if (!user) return "";
 
   const nameParts: string[] = [];
-  if (p.user.firstName) nameParts.push(p.user.firstName);
-  if (p.user.lastName) nameParts.push(p.user.lastName ?? "");
+  if (user.firstName) nameParts.push(user.firstName ?? "");
+  if (user.lastName) nameParts.push(user.lastName ?? "");
 
   const fullName = nameParts.join(" ").trim();
-  return fullName || p.user.email || null;
+  return fullName || user.email || "";
 }
