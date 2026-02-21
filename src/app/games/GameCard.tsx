@@ -1,4 +1,7 @@
+"use client";
+
 import { Calendar, Users } from "lucide-react";
+import { useSession } from "next-auth/react";
 
 import {
   Card,
@@ -12,11 +15,14 @@ import {
 import { buildTimeSlots } from "@/lib/hostUtils";
 import { addMinutes, getPlayerLabel } from "@/lib/utils";
 
-import JoinButton from "./JoinButton";
+import { JoinButton } from "./JoinButton";
+import { LeaveButton } from "./LeaveButton";
 
-import type { Game } from "@/types/models";
+import type { Game, Player } from "@/types/models";
 
 export function GameCard({ game, index }: { game: Game; index: number }) {
+  const { data: session } = useSession();
+
   const slots = buildTimeSlots();
   const start = slots[game.startIndex] ?? "--:--";
 
@@ -34,6 +40,9 @@ export function GameCard({ game, index }: { game: Game; index: number }) {
     month: "short",
     day: "numeric",
   });
+
+  const userId = session?.user?.id;
+  const isJoined = !!players.find((player: Player) => player.userId === userId);
 
   return (
     <Card className="p-4 border border-border">
@@ -103,7 +112,11 @@ export function GameCard({ game, index }: { game: Game; index: number }) {
 
       <CardFooter>
         <div className="ml-auto">
-          <JoinButton gameId={game.id} players={players} disabled={isFull} />
+          {isJoined ? (
+            <LeaveButton gameId={game.id} />
+          ) : (
+            <JoinButton gameId={game.id} disabled={isFull} />
+          )}
         </div>
       </CardFooter>
     </Card>

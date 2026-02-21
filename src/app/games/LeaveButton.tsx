@@ -7,21 +7,20 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 
-interface JoinButtonProps {
+interface LeaveButtonProps {
   gameId: string;
-  disabled: boolean;
 }
 
-export function JoinButton({ gameId, disabled }: JoinButtonProps) {
+export function LeaveButton({ gameId }: LeaveButtonProps) {
   const router = useRouter();
   const toast = useToast();
 
   const { data: session } = useSession();
   const [loading, setLoading] = useState(false);
 
-  async function handleJoin() {
+  async function handleLeave() {
     if (!session) {
-      toast("You must be signed in to join", "error");
+      toast("You must be signed in to leave", "error");
       return;
     }
 
@@ -29,23 +28,24 @@ export function JoinButton({ gameId, disabled }: JoinButtonProps) {
 
     try {
       const res = await fetch(`/api/games/${gameId}/join`, {
-        method: "POST",
+        method: "DELETE",
         headers: { "Content-Type": "application/json" },
       });
 
-      if (res.status === 201) {
-        toast("You joined the game", "success");
+      if (res.ok) {
+        toast("You left the game", "success");
         router.refresh();
         return;
       }
 
-      const body = await res.json();
+      const body = await res.json().catch(() => null);
       const message =
-        (body && (body.error || body.message)) || (await res.text());
-      toast(message || "Could not join game", "error");
+        (body && (body.error || body.message)) ||
+        (await res.text().catch(() => ""));
+      toast(message || "Could not leave game", "error");
     } catch (err) {
-      console.error("Join error:", err);
-      toast("Could not join game", "error");
+      console.error("Leave error:", err);
+      toast("Could not leave game", "error");
     } finally {
       setLoading(false);
     }
@@ -53,12 +53,12 @@ export function JoinButton({ gameId, disabled }: JoinButtonProps) {
 
   return (
     <Button
-      variant="default"
+      variant="destructive"
       className="px-3 py-1 text-sm"
-      onClick={handleJoin}
-      disabled={loading || disabled}
+      onClick={handleLeave}
+      disabled={loading}
     >
-      {loading ? "Joining..." : "Join"}
+      {loading ? "Leaving..." : "Leave"}
     </Button>
   );
 }

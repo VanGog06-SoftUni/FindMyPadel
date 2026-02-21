@@ -49,3 +49,40 @@ export async function POST(
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
+
+export async function DELETE(
+  _request: Request,
+  { params }: { params: Promise<{ gameId: string }> },
+) {
+  try {
+    const session = await auth();
+
+    const userId = session?.user?.id;
+
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { gameId } = await params;
+    const game = await prisma.game.findUnique({ where: { id: gameId } });
+
+    if (!game) {
+      return NextResponse.json({ error: "Game not found" }, { status: 404 });
+    }
+
+    const existing = await prisma.gamePlayer.findFirst({
+      where: { gameId, userId },
+    });
+
+    if (!existing) {
+      return NextResponse.json({ error: "Not joined" }, { status: 404 });
+    }
+
+    await prisma.gamePlayer.delete({ where: { id: existing.id } });
+
+    return NextResponse.json({ success: true }, { status: 200 });
+  } catch (error) {
+    console.error("Leave fetch error:", error);
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
+  }
+}
