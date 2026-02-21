@@ -46,11 +46,13 @@ export function GameCard({ game, index }: { game: Game; index: number }) {
         </div>
 
         <CardAction>
-          <div className="flex flex-col items-end gap-1">
+          <div className="flex flex-col items-end gap-1 py-1">
             <span
               aria-hidden
-              className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${
-                isFull ? "bg-red-600 text-white" : "bg-primary/20 text-primary"
+              className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-semibold ${
+                isFull
+                  ? "bg-red-600 text-white"
+                  : "bg-primary/20 text-primary-foreground"
               }`}
             >
               {isFull ? "Full" : "Open"}
@@ -101,7 +103,7 @@ export function GameCard({ game, index }: { game: Game; index: number }) {
 
       <CardFooter>
         <div className="ml-auto">
-          <JoinButton gameId={game.id} players={players} />
+          <JoinButton gameId={game.id} players={players} disabled={isFull} />
         </div>
       </CardFooter>
     </Card>

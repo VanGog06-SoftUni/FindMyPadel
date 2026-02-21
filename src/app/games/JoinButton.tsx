@@ -12,9 +12,14 @@ import type { Player } from "@/types/models";
 interface JoinButtonProps {
   gameId: string;
   players: Player[];
+  disabled?: boolean;
 }
 
-export default function JoinButton({ gameId, players }: JoinButtonProps) {
+export default function JoinButton({
+  gameId,
+  players,
+  disabled = false,
+}: JoinButtonProps) {
   const router = useRouter();
   const toast = useToast();
 
@@ -69,7 +74,7 @@ export default function JoinButton({ gameId, players }: JoinButtonProps) {
       variant="default"
       className="px-3 py-1 text-sm"
       onClick={handleJoin}
-      disabled={loading}
+      disabled={loading || disabled}
     >
       {loading ? "Joining..." : "Join"}
     </Button>
