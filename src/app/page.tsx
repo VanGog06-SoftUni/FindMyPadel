@@ -1,10 +1,52 @@
 import { ArrowRight, Calendar, MapPin, Users } from "lucide-react";
 import Link from "next/link";
 
+import { prisma } from "@/lib/prisma";
+
+import { StatusBadge } from "./games/StatusBadge";
+
 /**
  * Home page - Landing page for FindMyPadel
  */
-export default function Home() {
+export default async function Home() {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const games = await prisma.game.findMany({
+    where: {
+      date: { gte: today },
+    },
+    include: {
+      players: {
+        include: {
+          user: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+              image: true,
+            },
+          },
+        },
+      },
+      host: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+          image: true,
+        },
+      },
+    },
+    orderBy: [{ date: "asc" }, { startIndex: "asc" }],
+  });
+
+  const upcomingGames = games
+    .filter((game) => (game.players?.length ?? 0) < 4)
+    .slice(0, 3);
+
   return (
     <div className="flex flex-col min-h-screen">
       {/* Hero Section */}
@@ -99,37 +141,48 @@ export default function Home() {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1, 2, 3].map((i) => (
-              <div
-                key={i}
-                className="bg-card rounded-xl p-6 shadow-sm border border-border"
-              >
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <h3 className="font-semibold text-lg">Game #{i}</h3>
-                    <p className="text-muted-foreground text-sm">
-                      Placeholder location
-                    </p>
+            {upcomingGames.map((game, idx) => {
+              const index = idx + 1;
+              const playersCount = game.players ? game.players.length : 0;
+              const dateLabel = game.date.toLocaleDateString("en-US", {
+                weekday: "short",
+                month: "short",
+                day: "numeric",
+              });
+
+              return (
+                <div
+                  key={game.id}
+                  className="bg-card rounded-xl p-6 shadow-sm border border-border"
+                >
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <h3 className="font-semibold text-lg">Game #{index}</h3>
+                      <p className="text-muted-foreground text-sm">
+                        Padel court #{index}
+                      </p>
+                    </div>
+                    <StatusBadge isFull={false} />
                   </div>
-                  <span className="bg-primary/20 text-primary text-xs font-medium px-2 py-1 rounded">
-                    Open
-                  </span>
+                  <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
+                    <span className="flex items-center gap-1">
+                      <Calendar className="h-4 w-4" />
+                      {dateLabel}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Users className="h-4 w-4" />
+                      {playersCount}/4 players
+                    </span>
+                  </div>
+                  <Link
+                    href="/games"
+                    className="w-full inline-flex items-center justify-center rounded-lg bg-secondary py-2 text-sm font-medium text-secondary-foreground transition-colors hover:bg-secondary/90"
+                  >
+                    View Details
+                  </Link>
                 </div>
-                <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
-                  <span className="flex items-center gap-1">
-                    <Calendar className="h-4 w-4" />
-                    Tomorrow
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Users className="h-4 w-4" />
-                    2/4 players
-                  </span>
-                </div>
-                <button className="w-full rounded-lg bg-secondary py-2 text-sm font-medium text-secondary-foreground transition-colors hover:bg-secondary/90">
-                  View Details
-                </button>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Empty state - shown when no games available */}

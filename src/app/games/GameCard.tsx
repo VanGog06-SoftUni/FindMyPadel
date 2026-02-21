@@ -17,6 +17,7 @@ import { addMinutes, getPlayerLabel } from "@/lib/utils";
 
 import { JoinButton } from "./JoinButton";
 import { LeaveButton } from "./LeaveButton";
+import { StatusBadge } from "./StatusBadge";
 
 import type { Game, Player } from "@/types/models";
 
@@ -55,18 +56,7 @@ export function GameCard({ game, index }: { game: Game; index: number }) {
         </div>
 
         <CardAction>
-          <div className="flex flex-col items-end gap-1 py-1">
-            <span
-              aria-hidden
-              className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-semibold ${
-                isFull
-                  ? "bg-red-600 text-white"
-                  : "bg-primary/20 text-primary-foreground"
-              }`}
-            >
-              {isFull ? "Full" : "Open"}
-            </span>
-          </div>
+          <StatusBadge isFull={isFull} />
         </CardAction>
       </CardHeader>
 
