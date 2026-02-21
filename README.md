@@ -1,14 +1,6 @@
 # FindMyPadel
 
-FindMyPadel is a Next.js app for discovering and hosting padel games.
-
-## Current Features
-
-- Email/password sign up
-- Credential-based sign in (NextAuth)
-- JWT session strategy
-- PostgreSQL persistence via Prisma
-- Responsive UI with shadcn/ui + Tailwind CSS
+FindMyPadel is a small Next.js application for discovering, hosting, and joining local padel games. It aims to make organizing casual matches fast and social by providing an easy interface for hosts and players to find, schedule, and join nearby games.
 
 ## Tech Stack
 
@@ -26,20 +18,24 @@ FindMyPadel is a Next.js app for discovering and hosting padel games.
 ## Prerequisites
 
 - Node.js 18.18+
-- npm
-- Docker Desktop (or Docker Engine)
+- npm (or pnpm/yarn)
+- Docker Desktop (or Docker Engine) for local Postgres
 
-## Environment Variables
+## Environment variables
 
-Create a `.env` file in the project root:
+Create a `.env` file in the project root. Minimum required variables:
 
 ```bash
 DATABASE_URL="postgresql://postgres:postgres@localhost:5432/findmypadel?schema=public"
-NEXTAUTH_SECRET="your-long-random-secret"
+NEXTAUTH_SECRET="a-long-random-string"
 NEXTAUTH_URL="http://localhost:3000"
 ```
 
-## Getting Started
+- `DATABASE_URL`: Postgres connection string used by Prisma.
+- `NEXTAUTH_SECRET`: Secret used to sign NextAuth tokens.
+- `NEXTAUTH_URL`: Base URL for the Next.js app (used by NextAuth callback URLs).
+
+## Local development (Quickstart)
 
 1. Install dependencies:
 
@@ -47,25 +43,31 @@ NEXTAUTH_URL="http://localhost:3000"
 npm install
 ```
 
-2. Start Postgres:
+2. Start Postgres (via Docker Compose):
 
 ```bash
-docker compose up -d postgres
+docker compose up -d
 ```
 
-3. Apply migrations:
+3. Apply migrations (creates/updates DB schema):
 
 ```bash
 npx prisma migrate deploy
 ```
 
-4. (Optional) regenerate Prisma client:
+If you are actively developing schema changes, use:
+
+```bash
+npx prisma migrate dev
+```
+
+4. Generate Prisma client (if needed):
 
 ```bash
 npx prisma generate
 ```
 
-5. Start the app:
+5. Start the app in development:
 
 ```bash
 npm run dev
@@ -73,21 +75,19 @@ npm run dev
 
 Open http://localhost:3000
 
-## Database Notes
+### Note on Docker Compose
 
-- The current schema contains only a `users` table.
-- Auth uses `session.strategy: "jwt"`, so session data is stored in cookies/JWT, not in a `sessions` table.
+The included `docker-compose.yml` defines a `postgres` service (Postgres 16). By default it maps port `5432` on the host. The service mounts a named volume for persistent data.
 
-## Available Scripts
+## Scripts
 
-| Command                     | Description              |
-| --------------------------- | ------------------------ |
-| `npm run dev`               | Start development server |
-| `npm run build`             | Build for production     |
-| `npm start`                 | Start production server  |
-| `npm run lint`              | Run ESLint               |
-| `npm run studio`            | Open Prisma Studio       |
-| `npx prisma migrate status` | Check migration status   |
+From `package.json`:
+
+- `npm run dev` — Start Next.js in development mode.
+- `npm run build` — Build for production.
+- `npm start` — Start the production server.
+- `npm run lint` — Run ESLint.
+- `npm run studio` — Open Prisma Studio (`npx prisma studio`).
 
 ## License
 
