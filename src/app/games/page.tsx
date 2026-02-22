@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 
-import GameCard from "./GameCard";
+import { GameCard } from "../../components/shared";
 
 import type { Game } from "@/types/models";
 

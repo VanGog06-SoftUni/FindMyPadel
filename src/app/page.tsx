@@ -3,7 +3,7 @@ import Link from "next/link";
 
 import { prisma } from "@/lib/prisma";
 
-import { StatusBadge } from "./games/StatusBadge";
+import { StatusBadge } from "../components/shared";
 
 /**
  * Home page - Landing page for FindMyPadel

@@ -2,15 +2,12 @@
 
 import { useMemo, useState } from "react";
 
+import { Dialog, DialogBody, useToast } from "@/components/shared";
+import { Button } from "@/components/ui/button";
 import { useDragSlots } from "@/hooks/useDragSlots";
 import { useReservedIndexes } from "@/hooks/useReservedIndexes";
 import { ON_SITE_PAYMENT } from "@/lib/const";
-import { buildTimeSlots } from "@/lib/hostUtils";
-
-import { Button } from "./button";
-import { Dialog } from "./dialog";
-import { DialogBody } from "./dialogBody";
-import { useToast } from "./toast";
+import { buildTimeSlots } from "@/lib/utils";
 
 interface TimeSlotsProps {
   selectedSlotIndexes: number[];

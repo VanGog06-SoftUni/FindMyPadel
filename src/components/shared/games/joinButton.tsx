@@ -4,23 +4,24 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { useToast } from "@/components/shared";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/toast";
 
-interface LeaveButtonProps {
+interface JoinButtonProps {
   gameId: string;
+  disabled: boolean;
 }
 
-export function LeaveButton({ gameId }: LeaveButtonProps) {
+export function JoinButton({ gameId, disabled }: JoinButtonProps) {
   const router = useRouter();
   const toast = useToast();
 
   const { data: session } = useSession();
   const [loading, setLoading] = useState(false);
 
-  async function handleLeave() {
+  async function handleJoin() {
     if (!session) {
-      toast("You must be signed in to leave", "error");
+      toast("You must be signed in to join", "error");
       return;
     }
 
@@ -28,24 +29,23 @@ export function LeaveButton({ gameId }: LeaveButtonProps) {
 
     try {
       const res = await fetch(`/api/games/${gameId}/join`, {
-        method: "DELETE",
+        method: "POST",
         headers: { "Content-Type": "application/json" },
       });
 
-      if (res.ok) {
-        toast("You left the game", "success");
+      if (res.status === 201) {
+        toast("You joined the game", "success");
         router.refresh();
         return;
       }
 
-      const body = await res.json().catch(() => null);
+      const body = await res.json();
       const message =
-        (body && (body.error || body.message)) ||
-        (await res.text().catch(() => ""));
-      toast(message || "Could not leave game", "error");
+        (body && (body.error || body.message)) || (await res.text());
+      toast(message || "Could not join game", "error");
     } catch (err) {
-      console.error("Leave error:", err);
-      toast("Could not leave game", "error");
+      console.error("Join error:", err);
+      toast("Could not join game", "error");
     } finally {
       setLoading(false);
     }
@@ -53,12 +53,12 @@ export function LeaveButton({ gameId }: LeaveButtonProps) {
 
   return (
     <Button
-      variant="destructive"
+      variant="default"
       className="px-3 py-1 text-sm"
-      onClick={handleLeave}
-      disabled={loading}
+      onClick={handleJoin}
+      disabled={loading || disabled}
     >
-      {loading ? "Leaving..." : "Leave"}
+      {loading ? "Joining..." : "Join"}
     </Button>
   );
 }

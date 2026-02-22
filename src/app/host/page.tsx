@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import { TimeSlots } from "@/components/shared";
 import {
   Card,
   CardContent,
@@ -11,8 +12,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { TimeSlots } from "@/components/ui/timeSlots";
-import { formatDateForInput } from "@/lib/hostUtils";
+import { formatDateForInput } from "@/lib/utils";
 
 export default function HostPage() {
   const [selectedDate, setSelectedDate] = useState(

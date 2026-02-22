@@ -3,6 +3,7 @@
 import { Calendar, Users } from "lucide-react";
 import { useSession } from "next-auth/react";
 
+import { JoinButton, LeaveButton, StatusBadge } from "@/components/shared";
 import {
   Card,
   CardAction,
@@ -12,12 +13,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { buildTimeSlots } from "@/lib/hostUtils";
-import { addMinutes, getPlayerLabel } from "@/lib/utils";
-
-import { JoinButton } from "./JoinButton";
-import { LeaveButton } from "./LeaveButton";
-import { StatusBadge } from "./StatusBadge";
+import { addMinutes, buildTimeSlots, getPlayerLabel } from "@/lib/utils";
 
 import type { Game, Player } from "@/types/models";
 
@@ -114,5 +110,3 @@ export function GameCard({ game, index }: { game: Game; index: number }) {
     </Card>
   );
 }
-
-export default GameCard;

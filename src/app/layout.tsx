@@ -3,9 +3,9 @@ import "./globals.css";
 
 import { Geist, Geist_Mono } from "next/font/google";
 
-import { Header } from "@/components/layout/Header";
-import { SessionProvider } from "@/components/providers/SessionProvider";
-import { ToastProvider } from "@/components/ui/toast";
+import { Header } from "@/components/layout/header";
+import { SessionProvider } from "@/components/providers/sessionProvider";
+import { ToastProvider } from "@/components/shared";
 import { cn } from "@/lib/utils";
 
 const geistSans = Geist({
